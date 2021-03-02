@@ -1,0 +1,52 @@
+app-id: cc.arduino.arduinoide
+base: org.electronjs.Electron2.BaseApp
+base-version: '20.08'
+runtime: org.freedesktop.Platform
+runtime-version: '20.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+- org.freedesktop.Sdk.Extension.node12
+build-options:
+  prefix: /app/utils
+  env:
+    PATH: /usr/lib/sdk/node12/bin:/app/utils/bin:/app/bin:/usr/bin
+command: arduino-ide
+finish-args:
+- --filesystem=host
+- --socket=x11
+- --socket=wayland
+- --device=all
+modules:
+- name: nodejs
+  buildsystem: simple
+  build-commands:
+  - install -Dm 755 /usr/lib/sdk/node12/bin/node /app/utils/bin/node
+- name: yarn
+  buildsystem: simple
+  build-commands:
+  - mkdir --parents /app/share/yarn/
+  - cp --archive * /app/share/yarn/
+  - ln --symbolic /app/share/yarn/bin/yarn /app/bin/yarn
+  - ln --symbolic /app/share/yarn/bin/yarnpkg /app/bin/yarnpkg
+  cleanup:
+  - "*"
+  sources:
+  - type: archive
+    url: https://github.com/yarnpkg/yarn/releases/download/v1.22.10/yarn-v1.22.10.tar.gz
+    sha256: 7e433d4a77e2c79e6a7ae4866782608a8e8bcad3ec6783580577c59538381a6e
+- name: zypak
+  sources:
+  - type: git
+    url: https://github.com/refi64/zypak
+    tag: v2021.02
+    commit: ae8b0423588479d8403c192feb630c582656bee6
+- name: arduino
+  buildsystem: simple
+  build-commands:
+  - ls -la
+  - yarn --offline install
+  sources:
+  - type: git
+    url: https://github.com/arduino/arduino-ide.git
+    tag: 2.0.0-beta.3
+  - generated-sources.json
